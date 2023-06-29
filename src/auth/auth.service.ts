@@ -5,56 +5,66 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-// import { generateFromEmail } from 'unique-username-generator';
-//   import { RegisterUserDto } from './dtos/auth.dto';
+import { generateFromEmail } from 'unique-username-generator';
+import { RegisterUserDto } from './dto/index';
 
 @Injectable()
 export class AuthService {
   constructor(
-    // private jwtService: JwtService,
-    // private prisma: PrismaService, 
+    private jwtService: JwtService,
+    private prisma: PrismaService, 
   ) {}
 
-  // generateJwt(payload) {
-  //   return this.jwtService.sign(payload);
-  // }
+  generateJwt(payload) {
+    return this.jwtService.sign(payload);
+  }
 
-  // async signIn(user) {
-  //   if (!user) {
-  //     throw new BadRequestException('Unauthenticated');
-  //   }
+  async signIn(user) {
+    if (!user) {
+      throw new BadRequestException('Unauthenticated');
+    }
 
-  //   const userExists = await this.prisma.user.findUnique({
-  //     where: {
-  //       email: user.email,
-  //     }
-  //   })
-// 
-//     if (!userExists) {
-//       return this.registerUser(user);
-//     }
+    const userExists = await this.prisma.user.findUnique({
+      where: {
+        email: user.email,
+      }
+    })
 
-//     return this.generateJwt({
-//       sub: userExists.id,
-//       email: userExists.email,
-//     });
-//   }
+    if (!userExists) {
+      return this.registerUser(user);
+    }
 
-//   async registerUser(user: RegisterUserDto) {
-//     try {
-//       const newUser = this.userRepository.create(user);
-//       newUser.username = generateFromEmail(user.email, 5);
+    return this.generateJwt({
+      sub: userExists.id,
+      email: userExists.email,
+    });
+  }
 
-//       await this.userRepository.save(newUser);
+  async registerUser(user: RegisterUserDto) {
+    try {
+      const newUser = await this.prisma.user.create({
+        data: {
+          ...user,
+        }
+      })
+  
+      await this.prisma.user.update({
+        where: {
+          email: user.email,
+        },
+        data: {
+          username: generateFromEmail(user.email, 5),
+        }
+      })
 
-//       return this.generateJwt({
-//         sub: newUser.id,
-//         email: newUser.email,
-//       });
-//     } catch {
-//       throw new InternalServerErrorException();
-//     }
-//   }
+      return this.generateJwt({
+        sub: newUser.id,
+        email: newUser.email,
+      });
+    } catch {
+      throw new InternalServerErrorException();
+    }
+  }
 
 //   async findUserByEmail(email) {
 //     const user = await this.userRepository.findOne({ email });
