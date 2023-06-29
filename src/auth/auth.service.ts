@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'src/prisma/prisma.service';
 // import { generateFromEmail } from 'unique-username-generator';
 //   import { RegisterUserDto } from './dtos/auth.dto';
 
@@ -11,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
   constructor(
     // private jwtService: JwtService,
+    // private prisma: PrismaService, 
   ) {}
 
   // generateJwt(payload) {
@@ -22,8 +24,12 @@ export class AuthService {
   //     throw new BadRequestException('Unauthenticated');
   //   }
 
-//     const userExists = await this.findUserByEmail(user.email);
-
+  //   const userExists = await this.prisma.user.findUnique({
+  //     where: {
+  //       email: user.email,
+  //     }
+  //   })
+// 
 //     if (!userExists) {
 //       return this.registerUser(user);
 //     }
