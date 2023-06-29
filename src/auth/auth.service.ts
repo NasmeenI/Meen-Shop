@@ -10,17 +10,17 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
+    // private jwtService: JwtService,
   ) {}
 
-  generateJwt(payload) {
-    return this.jwtService.sign(payload);
-  }
+  // generateJwt(payload) {
+  //   return this.jwtService.sign(payload);
+  // }
 
-  async signIn(user) {
-    if (!user) {
-      throw new BadRequestException('Unauthenticated');
-    }
+  // async signIn(user) {
+  //   if (!user) {
+  //     throw new BadRequestException('Unauthenticated');
+  //   }
 
 //     const userExists = await this.findUserByEmail(user.email);
 
@@ -58,5 +58,5 @@ export class AuthService {
 //     }
 
 //     return user;
-  }
+  // }
 }

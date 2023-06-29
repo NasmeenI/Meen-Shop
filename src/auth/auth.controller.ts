@@ -14,22 +14,22 @@ import { GoogleOauthGuard } from './guards/google-oauth.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Get('google')
+  @Get('google/login')
   @UseGuards(GoogleOauthGuard)
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async auth() {}
 
-  @Get('google/callback')
+  @Get('google/redirect')
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(@Req() req, @Res() res: Response) {
-    const token = await this.authService.signIn(req.user);
+  //   const token = await this.authService.signIn(req.user);
 
-    res.cookie('access_token', token, {
-      maxAge: 2592000000,
-      sameSite: true,
-      secure: false,
-    });
+  //   res.cookie('access_token', token, {
+  //     maxAge: 2592000000,
+  //     sameSite: true,
+  //     secure: false,
+  //   });
 
-    return res.status(HttpStatus.OK);
+  //   return res.status(HttpStatus.OK);
   }
 }
