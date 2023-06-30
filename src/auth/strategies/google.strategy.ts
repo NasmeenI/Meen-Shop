@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth2';
 
@@ -7,9 +7,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
   ) {
     super({
-      clientID: "743077004197-99r4k72ubduio471sdh6r2hftt0jg5lp.apps.googleusercontent.com",
-      clientSecret: "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",
-      callbackURL: "http://localhost:3000/auth/google/redirect",
+      clientID: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      callbackURL: process.env.CALLBACK_URL,
       scope: ['profile', 'email'],
     });
   }
@@ -26,10 +26,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       provider: 'google',
       providerId: id,
       email: emails[0].value,
-      name: `${name.givenName} ${name.familyName}`,
+      username: `${name.givenName} ${name.familyName}`,
       picture: photos[0].value,
     };
-    console.log(profile);
 
     done(null, user);
   }
