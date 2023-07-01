@@ -4,12 +4,12 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { generateFromEmail } from 'unique-username-generator';
 import { RegisterUserDto } from './dto';
 
 @Injectable()
-export class AuthService {
+export class GoogleService {
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService, 
