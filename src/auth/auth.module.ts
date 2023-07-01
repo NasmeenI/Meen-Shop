@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
 import { GoogleModule } from './google/google.module';
+import { RegisterModule } from './register/register.module';
 
 @Module({
-  imports: [GoogleModule],
-  controllers: [AuthController],
+  imports: [
+    GoogleModule,
+    RegisterModule
+  ],
 })
 export class AuthModule {}

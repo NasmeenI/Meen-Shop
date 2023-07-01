@@ -14,6 +14,13 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
       JwtModule.register({}),
     ],
     controllers: [GoogleController],
-    providers: [GoogleService, JwtAuthGuard, GoogleOauthGuard, JwtStrategy, GoogleStrategy, JwtService],
+    providers: [
+      GoogleService,
+      JwtAuthGuard, 
+      GoogleOauthGuard, 
+      JwtStrategy, 
+      GoogleStrategy, 
+      JwtService
+    ],
 })
 export class GoogleModule {}
