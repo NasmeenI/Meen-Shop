@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SigninDto, SignupDto } from './dto';
 import { Prisma } from '@prisma/client';
 import * as argon from 'argon2';
+import { JwtPayload } from './strategies';
 
 @Injectable()
 export class RegisterService {
@@ -20,65 +21,74 @@ export class RegisterService {
     dto.hash = await argon.hash(dto.hash);
 
     try{
-        // save the new user in the db
-        const user = await this.prisma.user.create({
-            data: {
-                provider: 'register',
-                ...dto
-            },
-        });
-        
-        // return the saved user
-        return this.signToken(user.id, user.email)
-        
-    } catch(error){
-        if(error instanceof Prisma.PrismaClientKnownRequestError) {
-            if(error.code === 'P2002') {
-                throw new ForbiddenException('Credentials taken');
-            }
+      await this.prisma.user.findUnique({
+        where: {
+          email: dto.email,
         }
-        throw error;
+      }).then((data) => {
+        if(data) throw new ForbiddenException('Credentials taken');
+      })
+
+      // save the new user in the db
+      const user = await this.prisma.user.create({
+        data: {
+          provider: 'register',
+          ...dto
+        },
+      });
+      
+      // return the saved user
+      return this.signToken({
+        sub: user.id, 
+        email: user.email,
+      })
+    } catch(error){
+      if(error instanceof Prisma.PrismaClientKnownRequestError) {
+        if(error.code === 'P2002') {
+          throw new ForbiddenException('Credentials taken');
+        }
+      }
+      throw error;
     }
   }
 
   async signin(dto: SigninDto) {
-      // sign the user by email
-      const user = await this.prisma.user.findUnique({
-          where: {
-              email: dto.email,
-          },
-      });
+    // sign the user by email
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
 
-      // if user does not exist throw exception
-      if(!user) throw new ForbiddenException('Credentials incorrect');
+    // if user does not exist throw exception
+    if(!user) throw new ForbiddenException('Credentials incorrect');
 
-      // compare password
-      const pwMatches = await argon.verify(
-          user.hash,
-          dto.password,
-      );
+    // compare password
+    const pwMatches = await argon.verify(
+      user.hash,
+      dto.password,
+    );
 
-      // if password incorrect throw exception
-      if(!pwMatches) throw new ForbiddenException('Credentials incorrect');
+    // if password incorrect throw exception
+    if(!pwMatches) throw new ForbiddenException('Credentials incorrect');
 
-      // send back the user
-      return this.signToken(user.id, user.email)
+    // send back the user
+    return this.signToken({
+      sub: user.id, 
+      email: user.email,
+    })
   }
 
-  async signToken(userId: String, email: String): Promise<{ access_token: String }> {
-      const payload = {
-          sub: userId,
-          email
-      }
-      const secret = process.env.JWT_SECRET;
-      
-      const token = await this.jwtService.signAsync(payload, {
-          expiresIn: '15m',
-          secret: secret,
-      })
+  async signToken(payload: JwtPayload): Promise<{ access_token: String }> {
+    const secret = process.env.JWT_SECRET;
+    
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+      secret: secret,
+    })
 
-      return {
-          access_token: token
-      }
+    return {
+      access_token: token
+    }
   }
 }

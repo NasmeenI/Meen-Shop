@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { generateFromEmail } from 'unique-username-generator';
 import { RegisterUserDto } from './dto';
+import { JwtPayload } from '../register/strategies';
 
 @Injectable()
 export class GoogleService {
@@ -28,7 +29,10 @@ export class GoogleService {
     if (!userExists) 
       return await this.registerUser(user);
     
-    return await this.signToken(userExists.id, userExists.email);
+    return this.signToken({
+      sub: userExists.id, 
+      email: userExists.email,
+    })
   }
 
   async registerUser(user: RegisterUserDto): Promise<{ access_token: String }>  {
@@ -48,24 +52,26 @@ export class GoogleService {
         }
       })
 
-      return await this.signToken(newUser.id, newUser.email);
+      return this.signToken({
+        sub: newUser.id, 
+        email: newUser.email,
+      })
     } catch {
       throw new InternalServerErrorException();
     }
   }
 
-  async signToken(userId: String, email: String): Promise<{ access_token: String }> {
-    const payload = {
-        sub: userId,
-        email
-    }
-
+  async signToken(payload: JwtPayload): Promise<{ access_token: String }> {
+    const secret = process.env.JWT_SECRET;
+    
     const token = await this.jwtService.signAsync(payload, {
         expiresIn: '15m',
-        secret: process.env.DATABASE_URL,
+        secret: secret,
     })
 
-    return { access_token: token }
+    return {
+        access_token: token
+    }
   }
 
   async findUserByEmail(email: string) {

@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       }
       return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     };
-
+    
     super({
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET,
@@ -28,21 +28,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<{ 
-    id: string, 
-    email:string 
-  }> {
+  async validate(payload: JwtPayload){
     const user = await this.prisma.user.findUnique({
       where: {
         id: payload.sub,
       }
     })
-
     if (!user) throw new UnauthorizedException('Please log in to continue');
 
-    return {
-      id: payload.sub,
-      email: payload.email,
-    };
+    delete user.hash;
+    return user;
   }
 }
